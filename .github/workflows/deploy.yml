@@ -1,0 +1,38 @@
+name: deploy.yml
+on:
+  push:
+    branches:
+      - master
+    paths-ignore:
+      - 'README.md'
+      - 'LICENSE'
+      - '.gitignore'
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      # Checkout the repository 下载源码
+      # 这一步就是检出你的代码仓库，并下载里面的代码到 runner 中，actions/checkout@v2 是官方的 action
+      - name: Checkout
+        uses: actions/checkout@v2
+      # 打包构建项目
+      - name: Build
+        uses: actions/setup-node@master
+        with:
+          node-version: '20.x'
+      - run: npm install # 安装依赖
+      - run: npm run build # 构建项目
+
+      # 部署到 GitHub Pages
+      # 这一步就是将构建好的项目部署到 GitHub Pages，actions/upload-artifact@v2 和 actions/deploy-pages@v1 是官方的 action
+      - name: Deploy
+        uses: peaceiris/actions-gh-pages@v4 # 使用部署到 GitHub Pages 的 action
+        with:
+          publish_branch: 'gh-pages' # 发布到 gh-pages 分支
+  #          deploy_key: ${{ secrets.ACTIONS_DEPLOY_KEY }} # 部署密钥，在项目的 Settings/Secrets/New repository secret 页面添加
+          publish_dir: ./dist # 发布的文件夹
+          github_token: ${{ secrets.CICDDEMO }} # 用于推送到 gh-pages 分支
+          user_name: ${{ secrets.MY_USER_NAME }} # 发布者的名字
+          user_email: ${{ secrets.MY_USER_EMAIL }} # 发布者的邮箱
+          commit_message: 'Deploy to GitHub Pages' # 部署时的 git 提交信息
